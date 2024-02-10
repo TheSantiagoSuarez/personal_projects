@@ -1,5 +1,6 @@
 import pandas as pd
 import math
+import pickle
 
 import backups.fpl_data_intake as fpl_data_intake
 
@@ -317,4 +318,9 @@ def main(gw,league):
 
 
 if __name__ == "__main__":
-    main()
+    gw = 19
+    league = 41570
+    final_fpl_findings, stats, bench_stats, full_data = main(gw, league)
+    output = [final_fpl_findings, stats, bench_stats, full_data]
+    with open('data.pickle', 'wb') as file:
+        pickle.dump(output, file)

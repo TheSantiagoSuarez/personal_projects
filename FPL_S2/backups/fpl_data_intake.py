@@ -121,7 +121,7 @@ def main(current_gw,league):
         data_to_append = pd.Series({gw:get_data(f"https://draft.premierleague.com/api/event/{gw}/live")})
         player_stats_ser = pd.concat([player_stats_ser, data_to_append])
     player_stats_ser[1]
-    
+
     
     #get all player stats per gameweek
     player_stats = pd.DataFrame()

@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
+import pickle
 
 import fpl_findings
 
@@ -72,6 +73,21 @@ def show_player(data,num, points=False, metric="gameweeks"):
         st.success("{} points per game".format(round(data.loc[num,"points"]/data.loc[num,"player_id"],2)))
     elif points=="manager":
         st.markdown("By {}".format(data.loc[num,"manager_name"]))
+
+def show_most_teams(data, num, data2):
+    print_pic(data,num)
+    player_name = data.loc[num,"player_name"]
+    st.markdown("{}".format(player_name))
+    st.markdown("in {} teams".format(data.loc[num,0]))    
+        
+    if player_name in data2["player_name"].values:
+        row = data2[data2["player_name"]==data.loc[num,"player_name"]]
+        st.markdown("{} GWs in your team".format(row["player_id"].values[0]))
+        st.success("{} points total".format(row["points"].values[0]))
+    else:
+        st.markdown(" ")
+        st.markdown(" ")
+        st.warning("Never in your team")
 
 
 def points(findings, _, __, ___):
@@ -357,13 +373,13 @@ def points(findings, _, __, ___):
         st.write(data)
     # endregion
 
-def players():
+def players(findings, stats, __, ___):
     st.subheader("Players Page")
     st.markdown("Some individual and group facts about players in the AKOYA league. Please choose a manager in the sidebar")
 
     manager = st.sidebar.selectbox("Choose Manager", ("YE","WN","SL","RK","ST","SS","AA","YA1","SB","YA","ES","AC"))
 
-    st.sidebar.image("FPL_S2/pictures/{}.png".format(manager.lower()), caption=manager,width=200)
+    #st.sidebar.image("FPL_S2/pictures/{}.png".format(manager.lower()), caption=manager,width=200)
 
     st.sidebar.markdown("Page Guide")
     st.sidebar.markdown("1. [Loyalty](#loyalty)")
@@ -379,12 +395,12 @@ def players():
     st.header("Loyalty")
     st.markdown("The players you've owned the longest")
 
-    real_ranking = pd.read_csv("FPL_S2/findings/points/real_ranking.csv")
+    real_ranking = findings['points']
 
     #region Loyalty
-    data = pd.read_csv('FPL_S2/findings/players/loyalty.csv')
+    data = findings['loyalty']
 
-    manager_df = data[data["manager_name"]==manager].sort_values("player_id",ascending=False).reset_index(drop=True).iloc[:10]
+    manager_df = data[data["manager"]==manager].sort_values("player_id",ascending=False).reset_index(drop=True).iloc[:10]
     cols = st.columns(5)
 
     for i in range(5):
@@ -392,20 +408,175 @@ def players():
             show_player(manager_df,i)
             show_player(manager_df,i+5)
     #endregion
+            
+    st.markdown("<hr>", unsafe_allow_html=True)
+    st.header("UnLoyalty")
+    st.markdown("The opposite of the last one")
+    
+    #region Unloyalty?
+    manager_df = data[data["manager"]==manager].sort_values("player_id",ascending=True).reset_index(drop=True).iloc[:10]
+    cols = st.columns(5)
 
+    for i in range(5):
+        with cols[i]:
+            show_player(manager_df,i)
+    #endregion
+
+    st.markdown("<hr>", unsafe_allow_html=True)
+    st.header("Most Played")
+    st.markdown("The players you've fielded the most")
+
+    #region Most Played
+    data = findings['most_played']
+    manager_df_full = data[data["manager_short_name"]==manager].reset_index(drop=True).sort_values("player_id",ascending=False)
+    manager_df = manager_df_full[:11]
+    tab1, tab2 = st.tabs(["Points Total","Points per Game"])
+
+    with tab1:
+        tab1_cols = st.columns(5)
+        for i in range(5):
+            with tab1_cols[i]:
+                show_player(manager_df,i,"total")
+                show_player(manager_df,i+5,"total")
+                
+    with tab2:
+        tab2_cols = st.columns(5)
+        for i in range(5):
+            with tab2_cols[i]:
+                show_player(manager_df,i,"average")
+                show_player(manager_df,i+5,"average")
+
+    #endregion
+
+    st.markdown(" ")
+    st.markdown("<hr>", unsafe_allow_html=True)
+    st.info("We've seen the players that have been most in ONE team, now let's look at the players that have been in MOST teams")
+
+    st.header("Most Teams")
+    st.markdown("What I just said")
+
+    #region Most Teams
+    most_teams = findings['most_teams'][:8]
+
+    cols = st.columns(4)
+
+    for i in range(4):
+        with cols[i]:
+            show_most_teams(most_teams,i,manager_df_full)
+            show_most_teams(most_teams,i+4,manager_df_full)
+    #endregion
+
+    st.markdown("<hr>", unsafe_allow_html=True)
+    st.info("Now, Ruslan's time to shine")
+
+    st.header("Club Mascot")
+    st.markdown("A few stats based on how many players from a single club one has fielded")
+
+    #region Club Mascot
+    mascot = findings['club_mascot']
+    fielded = mascot[mascot["manager"]==manager].sort_values("fielded",ascending=False).reset_index(drop=True)
+    ppg = mascot[(mascot["manager"]==manager)&(mascot["fielded"]>15)].sort_values("ppg",ascending=False).reset_index(drop=True)
+
+    tab1, tab2 = st.tabs(["Most Fielded","Points per Game"])
+    
+    with tab1:
+        tab1_cols = st.columns(3)
+        for i in range(3):
+            with tab1_cols[i]:
+                row = fielded.loc[i]
+                percentage = round(row["points"]/int(real_ranking[real_ranking["manager"]==manager]["points"].values[0]),2)
+                print_badge(row["team"],___['akoya'])
+                st.markdown("Fielded {} players {} times".format(row["team"],row["fielded"]))
+                st.markdown("Scored {} total points".format(row["points"]))
+                st.success("{}% of total points".format(percentage*100))
+                
+    with tab2:
+        tab2_cols = st.columns(3)
+        for i in range(3):
+            with tab2_cols[i]:
+                row = ppg.loc[i]
+                percentage = round(row["points"]/int(real_ranking[real_ranking["manager"]==manager]["points"].values[0]),2)
+                print_badge(row["team"],___['akoya'])
+                st.markdown("Fielded {} players {} times".format(row["team"],row["fielded"]))
+                st.markdown("Scored {} total points".format(row["ppg"]))
+                st.success("{}% of total points".format(percentage*100))
+    #endregion
+    
+    st.header("Star Players")
+
+    #region Star Players
+    data = findings['most_played']
+    total_points = data[data["manager_short_name"]==manager].sort_values("points",ascending=False).reset_index(drop=True)[:3]
+    ppg = data[(data["manager_short_name"]==manager)&(data["player_id"]>5)].sort_values("ppg",ascending=False).reset_index(drop=True)[:3]
+
+    tab1, tab2 = st.tabs(["Points Total","Points per Game*"])
+
+    with tab1:
+        tab1_cols = st.columns(3)
+        for i in range(3):
+            with tab1_cols[i]:
+                print(total_points)
+                print_pic(total_points,i)
+                row = total_points.loc[i]
+                percentage = round(row["points"]/int(real_ranking[real_ranking["manager"]==manager]["points"].values[0]),2)
+                st.markdown("{}".format(row["player_name"]))
+                st.markdown("Scored {} total points".format(row["points"]))
+                st.success("{}% of total points".format(percentage*100))
+    
+    with tab2:
+        tab2_cols = st.columns(3)
+        for i in range(3):
+            with tab2_cols[i]:
+                print_pic(ppg,i)
+                row = ppg.loc[i]
+                percentage = round(row["points"]/int(real_ranking[real_ranking["manager"]==manager]["points"].values[0]),2)
+                st.markdown("{}".format(row["player_name"]))
+                st.markdown("Scored {} points per game".format(row["ppg"]))
+                st.success("{}% of total points".format(percentage*100))
+        
+        st.markdown("*Must have played at least 5 games")
+    #endregion
+
+def transfers(_, __,___, full_data):
+    manager = st.sidebar.selectbox("Choose Manager", ("YE","WN","SL","RK","ST","SS","AA","YA1","SB","YA","ES","AC"))    
+    
+    if manager != "Everyone":
+        st.sidebar.image("FPL_S2/pictures/{}.png".format(manager.lower()), caption=manager,width=200)
+
+    st.sidebar.markdown("Page Guide")
+    st.sidebar.markdown("1. [Total Transfers Ranking](#total-transfers-ranking)")
+    st.sidebar.markdown("2. [Most Transferred In](#most-transferred-in)")
+    st.sidebar.markdown("3. [Best & Worst Transfers](#best-and-worst-transfers)")
+
+    st.subheader("Transfers Page")
+    st.markdown("Quick view of the best and worst transactions in the AKOYA league")
+    
+    st.markdown("<hr>", unsafe_allow_html=True)
+
+    st.subheader("Total Transfers Ranking")
+    st.markdown("Brought to you weekly by Ali Ascioglu")
+
+    #region Transfer Ranking
+    data = pd.read_csv("FPL_S2/findings/transfers/num_transfers.csv")
+    tab1, tab2 = st.tabs(["Total Transfers","Table"])
+    with tab1:
+        display_podium("Total Transfers",data,"transfer_id","transfers")
+    with tab2:
+        st.write(data)
+    #endregion
 
 pages = {
-    "Points": points,
-    # "Players": players,
+    "Total Points": points,
+    "Players": players,
     # "General Stats" : stats,
-    # "Transfers" : transfers
+    "Transfers" : transfers
 }
 
-def main():
-    gw = st.text_input("Please enter your current gameweek: ")
-    league = st.text_input("Enter league code (akoya = 41570): ")
+def main(findings, stats, bench_stats, full_data):
+    #gw = st.text_input("Please enter your current gameweek: ")
+    #league = st.text_input("Enter league code (akoya = 41570): ")
 
-    findings, stats, bench_stats, full_data = fpl_findings.main(int(gw),league)
+    #findings, stats, bench_stats, full_data = fpl_findings.main(int(gw),league)
     data = full_data["akoya"]
     st.title("AKOYA FPL Draft Wrapped")
     st.markdown("Let's look back at this season")
@@ -419,5 +590,17 @@ def main():
     pages[selection](findings, stats, bench_stats, full_data)  
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": 
+    #gw = st.text_input("Please enter your current gameweek: ")
+    #league = st.text_input("Enter league code (akoya = 41570): ")
+    #findings, stats, bench_stats, full_data = fpl_findings.main(int(gw),league)
+
+    with open ('data.pickle','rb') as file:
+        data = pickle.load(file)
+
+    findings = data[0]
+    stats = data[1]
+    bench_stats = data[2]
+    full_data = data[3]
+
+    main(findings, stats, bench_stats, full_data)
