@@ -1,5 +1,14 @@
-{% extends "base.html" %} {% block title %} Home Page {% endblock %}
+{% extends "base.html" %}
+{% block title %} Home Page {% endblock %}
 {% block content %}
+{% load static %}
 
-<p> this is a home page </p>
+<h1> Akoya FPL Wrapped</h1>
+
+<p> This is a home page </p>
+
+{% with images=images_list table_data=table_data_list %}
+    {% include 'podium.html' %}
+{% endwith %}
+
 {% endblock %}

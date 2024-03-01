@@ -153,4 +153,14 @@ def get_ranking_gw(managers, target, subtarget):
             df.loc[len(df.index)] = [manager.short_name,manager_name, gw, value]            
     return df.sort_values("points",ascending=False).reset_index(drop=True)
 
-def result_history(managers):
+def result_history(managers, target, current_gw):
+    history = {}
+
+    for gw in range(1,current_gw+1):
+        df = pd.DataFrame(columns=["manager_short_name", "manager", "points"])
+        for manager in managers:
+            points = manager.standings["points"][target][gw]
+            df.loc[len(df.index)]= [manager.short_name, manager.name, points]
+            
+        history[gw] = df.sort_values("points",ascending=False).reset_index(drop=True)
+    return history
