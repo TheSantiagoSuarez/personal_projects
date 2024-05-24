@@ -6,7 +6,7 @@ import FIX_fpl_classes as classes
 
 
 league = 41570
-current_gw = 19
+current_gw = 38
 
 # Raw Data
 data_raw = methods.get_data("https://draft.premierleague.com/api/bootstrap-static")

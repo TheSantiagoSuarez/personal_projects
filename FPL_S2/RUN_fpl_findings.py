@@ -318,7 +318,7 @@ def main(gw,league):
 
 
 if __name__ == "__main__":
-    gw = 19
+    gw = 38
     league = 41570
     final_fpl_findings, stats, bench_stats, full_data = main(gw, league)
     output = [final_fpl_findings, stats, bench_stats, full_data]
