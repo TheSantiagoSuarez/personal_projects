@@ -44,8 +44,8 @@ def get_detail(transaction):
 def categorise(tag,category):
     df.loc[df['payment_concepto'].str.contains(tag, case=False, na=False), 'payment_type'] = category
 
-year = "2024"
-month = "04"
+year = "2025"
+month = "03"
 
 df = pd.read_excel(f"raw_excels/{year}_{month}.xls")
 df.columns = df.iloc[6]

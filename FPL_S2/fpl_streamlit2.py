@@ -54,7 +54,7 @@ def print_badge(team, akoya):
 
 def show_player(data,num, points=False, metric="gameweeks"):
     print_pic(data,num)
-    if data.loc[num,"player_id"]==34:
+    if data.loc[num,"player_id"]==38:
         st.markdown("{} ✅".format(data.loc[num,"player_name"]))
     else:
         st.markdown("{}".format(data.loc[num,"player_name"]))
@@ -88,6 +88,48 @@ def show_most_teams(data, num, data2):
         st.markdown(" ")
         st.markdown(" ")
         st.warning("Never in your team")
+
+def display_stats(df, column, titles, metric):
+    df = df.sort_values(column,ascending=False)
+    df = df.loc[:,column]
+    
+    win_manager = df.index[0][0]
+    loss_manager = df.index[len(df)-1][0]
+
+    st.subheader(titles)
+    tab1, tab2, tab3 = st.tabs(["Most","Least","Table"])
+    with tab1:
+        if df.iloc[0]==df.iloc[1]:
+            tied_manager= df.index[1][0]
+            cols1,cols2 = st.columns(2)
+            with cols1:
+                st.image("pictures/{}.png".format(win_manager.lower()),width=80)
+            with cols2:
+                st.image("pictures/{}.png".format(tied_manager.lower()),width=80)
+            st.text("{} & {}:".format(win_manager,tied_manager))        
+            st.text("{} {}".format(round(df.iloc[0]),metric))
+        else:
+            st.image("pictures/{}.png".format(win_manager.lower()),width=160)
+            st.text("{}:".format(win_manager))        
+            st.text("{} {}".format(round(df.iloc[0]),metric))
+
+    with tab2:
+        if df.iloc[len(df)-1]==df.iloc[len(df)-2]:
+            tied_manager= df.index[len(df)-2][0]
+            cols1,cols2 = st.columns(2)
+            with cols1:
+                st.image("pictures/{}.png".format(loss_manager.lower()),width=80)
+            with cols2:
+                st.image("pictures/{}.png".format(tied_manager.lower()),width=80)
+            st.text("{} & {}:".format(loss_manager,tied_manager)) 
+            st.text("{} {}".format(round(df.iloc[len(df)-1]),metric))
+        else: 
+            st.image("pictures/{}.png".format(loss_manager.lower()),width=160)
+            st.text("{}:".format(loss_manager))
+            st.text("{} {}".format(round(df.iloc[len(df)-1]),metric))
+    with tab3:
+        st.write(df)
+
 
 
 def points(findings, _, __, ___):
@@ -379,7 +421,7 @@ def players(findings, stats, __, ___):
 
     manager = st.sidebar.selectbox("Choose Manager", ("YE","WN","SL","RK","ST","SS","AA","YA1","SB","YA","ES","AC"))
 
-    #st.sidebar.image("FPL_S2/pictures/{}.png".format(manager.lower()), caption=manager,width=200)
+    st.sidebar.image("pictures/{}.png".format(manager.lower()), caption=manager,width=200)
 
     st.sidebar.markdown("Page Guide")
     st.sidebar.markdown("1. [Loyalty](#loyalty)")
@@ -537,11 +579,41 @@ def players(findings, stats, __, ___):
         st.markdown("*Must have played at least 5 games")
     #endregion
 
+def stats(findings, stats, bench_stats, ___):
+    data = stats
+    st.subheader("General Statistics Page")
+    st.markdown("Here we are to celebrate the best of the best in each category, giving them the award they deserve.")
+    st.markdown("Let's see the winners...")
+    cols = st.columns(4)
+
+    for i in range(4):
+        with cols[i]:
+            columns = ["goals_scored","assists","clean_sheets","goals_conceded"]
+            titles = ["Most Goals Scored","Most Assists Provided","Most Cleansheets","Most Goals Conceded"]
+            metrics = ["goals","assists","clean sheets","goals conceded"]
+
+            display_stats(data,columns[i],titles[i],metrics[i])
+            st.markdown("<hr>", unsafe_allow_html=True)
+
+            columns = ["penalties_missed","penalties_saved","red_cards","yellow_cards"]
+            titles = ["2016 Pessi Award","Not De Gea Award","Sergio Ramos Award","Sergio Ramos Lite Award"]
+            metrics = ["penalties missed","penalties saved","red cards","rellow cards"]
+
+            display_stats(data,columns[i],titles[i],metrics[i])
+            st.markdown("<hr>", unsafe_allow_html=True)
+
+            columns = ["own_goals","saves","bonus","dreamteam"]
+            titles = ["Maguire Award","The Wall Award","BPS Merchant","TOTW Merchant"]
+            metrics = ["own goals","saves","bonus points","TOTW players"]
+
+            display_stats(data,columns[i],titles[i],metrics[i])
+            st.markdown("<hr>", unsafe_allow_html=True)
+
 def transfers(_, __,___, full_data):
     manager = st.sidebar.selectbox("Choose Manager", ("YE","WN","SL","RK","ST","SS","AA","YA1","SB","YA","ES","AC"))    
     
     if manager != "Everyone":
-        st.sidebar.image("FPL_S2/pictures/{}.png".format(manager.lower()), caption=manager,width=200)
+        st.sidebar.image("pictures/{}.png".format(manager.lower()), caption=manager,width=200)
 
     st.sidebar.markdown("Page Guide")
     st.sidebar.markdown("1. [Total Transfers Ranking](#total-transfers-ranking)")
@@ -556,8 +628,9 @@ def transfers(_, __,___, full_data):
     st.subheader("Total Transfers Ranking")
     st.markdown("Brought to you weekly by Ali Ascioglu")
 
+    
     #region Transfer Ranking
-    data = pd.read_csv("FPL_S2/findings/transfers/num_transfers.csv")
+    data = full_data
     tab1, tab2 = st.tabs(["Total Transfers","Table"])
     with tab1:
         display_podium("Total Transfers",data,"transfer_id","transfers")
@@ -565,10 +638,21 @@ def transfers(_, __,___, full_data):
         st.write(data)
     #endregion
 
+def h2h(findings, stats, bench_stats, full_data):
+    data = stats
+    st.subheader("Head to Head")
+    st.markdown("Introducing in the Akoya Cup 2nd Edition, a new format. It doesn't matter how many points you get, just if you beat the dickhead you're going up against.")
+    st.markdown("Let's see how you did")
+
+    manager = st.sidebar.selectbox("Choose Manager", ("YE","WN","SL","RK","ST","SS","AA","YA1","SB","YA","ES","AC"))
+    st.sidebar.image("pictures/{}.png".format(manager.lower()), caption=manager,width=200)
+
+
+
 pages = {
     "Total Points": points,
     "Players": players,
-    # "General Stats" : stats,
+    "General Stats" : stats,
     "Transfers" : transfers
 }
 

@@ -72,7 +72,7 @@ class FPLmanager:
                 standings["wins"] = s["matches_won"]
                 standings["draws"] = s["matches_drawn"]
                 standings["losses"] = s["matches_lost"]
-                standings["draft_points"] = (standings["wins"]*3) + (standings["draws"])
+                standings["h2h_points"] = (standings["wins"]*3) + (standings["draws"])
 
                 print("Standings saved")
                 self.standings = standings
