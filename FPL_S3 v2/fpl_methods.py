@@ -2,7 +2,7 @@ import urllib.request
 import json
 import pandas as pd
 
-import FIX_fpl_classes as classes
+import fpl_classes as classes
 
 def get_data(raw_url):
     print(f"Getting data from {raw_url}")
@@ -101,7 +101,7 @@ def get_missed_points(manager, current_gw):
     return missed_points
 
 def optimise_bench(manager, gw):            #####change format so that we build the optimal team
-    print("GW" + str(gw) + manager.name)
+    #print("GW" + str(gw) + manager.name)
     gw_picks = manager.picks.get(gw)
     position_limits = [(2,3),(3,2),(4,1)]               #(position, limit)
 
@@ -111,24 +111,24 @@ def optimise_bench(manager, gw):            #####change format so that we build 
         points += gw_picks["pos 12"].points[gw] - gw_picks["pos 1"].points[gw]
 
     for b in range(13,16):
-        print("pos " + str(b))
+        #print("pos " + str(b))
         bench_player_pts = gw_picks.get("pos " + str(b)).points.get(gw)
-        print(gw_picks.get("pos " + str(b)).name + str(bench_player_pts))
+        #print(gw_picks.get("pos " + str(b)).name + str(bench_player_pts))
         for f in range(2,12):
-            print("pos " + str(f))
+            #print("pos " + str(f))
             field_player_pts = gw_picks.get("pos " + str(f)).points.get(gw)
-            print(gw_picks.get("pos " + str(f)).name + str(field_player_pts))
+            #print(gw_picks.get("pos " + str(f)).name + str(field_player_pts))
             for pos in position_limits:
                 if manager.picks[gw]["formation"][pos[0]-2] > pos[1]:
                     if field_player_pts < bench_player_pts:
                         points += bench_player_pts - field_player_pts
-                        print("add points")
+                        #print("add points")
                         break # exit the inner loop and go to the next field_player
                     else:
                         continue  # only executed if the inner loop didn't break
                 break  # exit the outer loop and go to the next bench_player
     
-    print("total points" + str(points))
+    #print("total points" + str(points))
     return points
 
 # returns a df in order of target (like points) for subtarget (like gk)

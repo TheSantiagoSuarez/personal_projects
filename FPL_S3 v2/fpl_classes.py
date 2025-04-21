@@ -1,4 +1,4 @@
-import FIX_fpl_methods as methods
+import fpl_methods as methods
 
 class FPLmanager:
     def __init__(self, ID, id2, name, lastname, short_name, team_name):
@@ -36,9 +36,9 @@ class FPLmanager:
         for match in matches:
             pts_1 = match.player_1_points
             pts_2 = match.player_2_points
-            print("match_id: "+str(match.player_1))
-            print("self_id: "+str(self.ID))
-            print(match.player_1 == self.ID)
+            #print("match_id: "+str(match.player_1))
+            #print("self_id: "+str(self.ID))
+            #print(match.player_1 == self.ID)
             if match.player_1 == self.id2:
                 result = "W" if pts_1>pts_2 else "L" if pts_1<pts_2 else "D"
                 this_match = {"result":result,"points":pts_1, "opponent":methods.get_manager(match.player_2,managers, "id2"), "opponent_points":pts_2}
@@ -74,7 +74,7 @@ class FPLmanager:
                 standings["losses"] = s["matches_lost"]
                 standings["h2h_points"] = (standings["wins"]*3) + (standings["draws"])
 
-                print("Standings saved")
+                #print("Standings saved")
                 self.standings = standings
 
     def get_transfers(self, transfers):

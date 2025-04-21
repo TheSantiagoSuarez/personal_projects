@@ -2,7 +2,8 @@ import pandas as pd
 import math
 import pickle
 
-import backups.fpl_data_intake as fpl_data_intake
+import FIX_fpl_intake as fpl_data_intake
+#import backups.fpl_data_intake as fpl_data_intake
 
 def get_ranking(df,bench,goal,index="reset"):
     filtered = df[(df["manager_name"]!="transfer market")&(df["bench"]==bench)]
@@ -58,6 +59,7 @@ def missed_points(data, managers, gw):
     missed_points = pd.DataFrame(columns=["manager","manager_name","gameweek","missed_pts"])
 
     for manager in managers:
+        print(data["manager_name"].unique())
         for gw in range(1,gw+1):
             manager_name = data[data["manager_short_name"]==manager]["manager_name"].mode()[0]
             data_to_append = {"manager":manager,"manager_name":manager_name,"gameweek":gw,"missed_pts":optimise(data, gw,manager)}
@@ -253,6 +255,7 @@ def main(gw,league):
 
     final_fpl_findings = {}
 
+    print(data["manager_short_name"])
     managers = list(data["manager_short_name"].unique())
     managers.pop(1)
 
@@ -318,8 +321,8 @@ def main(gw,league):
 
 
 if __name__ == "__main__":
-    gw = 38
-    league = 41570
+    gw = 1
+    league = 29180
     final_fpl_findings, stats, bench_stats, full_data = main(gw, league)
     output = [final_fpl_findings, stats, bench_stats, full_data]
     with open('data.pickle', 'wb') as file:
