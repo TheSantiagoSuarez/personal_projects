@@ -63,11 +63,10 @@ class FPLmanager:
         points["bench"] = methods.get_picks_points(self, "bench")
         points["missed"] = methods.get_missed_points(self, current_gw)
 
+        points["points_against"], points["points_difference"] = methods.get_fixture_points(self)
+
         for s in standings_raw:
             if (s["league_entry"] == self.ID) | (s["league_entry"] == self.id2):
-                points["points_against"] = s["points_against"]
-                points["points_difference"] = sum(points["total"].values()) - points["points_against"]
-
                 standings["points"] = points
                 standings["wins"] = s["matches_won"]
                 standings["draws"] = s["matches_drawn"]
@@ -121,7 +120,7 @@ class Transfer:
         self.result = dict["result"]
 
         self.player_in = methods.get_player(dict["element_in"],players)
-        self.player_out = methods.get_player(dict["element_in"],players)
+        self.player_out = methods.get_player(dict["element_out"],players)
         self.manager = methods.get_manager(dict["entry"], managers)
         self.gameweek = dict["event"]
 

@@ -33,8 +33,7 @@ def main(league, current_gw):
                 points[gw] = methods.get_player_points(player_stats_raw,gw,id)  #add POINTS for that gameweek
 
                 try:
-                    for key,value in player_stats_raw[gw]["elements"][str(id)]["stats"].items(): #get specific player
-                        player.stats[gw] = value                                #get all the STATS into for the gw
+                    player.stats[gw] = player_stats_raw[gw]["elements"][str(id)]["stats"]   #get all the STATS for a specific player for the gw
                         
                 except KeyError:
                     continue
@@ -55,9 +54,11 @@ def main(league, current_gw):
         # standings: 
         man.get_standings(league_data_raw["standings"],current_gw)
 
+        man.get_transfers(transfers)
 
 
-    data = {"players":players,"managers":managers,"transfers":transfers,"teams":teams}
+
+    data = {"players":players,"managers":managers,"transfers":transfers,"teams":teams, "players_raw":player_stats_raw}
 
 
     with open('season_data.pickle', 'wb') as handle:

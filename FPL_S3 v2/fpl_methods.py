@@ -26,7 +26,7 @@ def get_managers(managers_raw):
 
 def get_manager(manager_id, managers, type = "ID"):
     for manager in managers:
-        if (type == "ID") & (manager.id2 == manager_id):
+        if (type == "ID") & (manager.ID == manager_id):
             return manager
         elif manager.id2 == manager_id:
             return manager
@@ -44,6 +44,39 @@ def get_picks_points(manager, position):
                 elif  (position == "bench") & (squad_pos > 11):
                         points[gw] = points[gw] + pos_player.points[gw]         # add the player.points of that gw to the total
     return points
+
+def get_fixture_points(manager):
+    opponent_points = {}
+    point_difference = {}
+    for gw, fix in manager.fixtures.items():
+        opponent_points[gw] = fix["opponent_points"]
+    else:
+        for gw, fix in manager.fixtures.items():
+            point_difference[gw] = fix["points"] - fix["opponent_points"]
+    return opponent_points, point_difference
+
+def get_stat_ranking(managers, target):
+    df = pd.DataFrame(columns=["manager_short_name","manager",target])
+
+    for manager in managers:
+        picks = manager.picks
+        target_amount = 0
+        for gw, squad in picks.items():
+            for position, player in squad.items():
+                if position != "formation":
+                    if (target == "clean_sheets") & ((player.position == 1) | (player.position == 2)):
+                        target_amount += player.stats[gw][target]
+                    elif target != "clean_sheets":
+                        target_amount += player.stats[gw][target]
+                    elif target == "dreamteam":
+                        if player.stats[gw][target]:
+                            target_amount += 1
+        row = {"manager_short_name":manager.short_name,"manager":manager.name,target: target_amount}
+        df.loc[df.shape[0]] =  row   
+    return df
+
+    return target_amount
+
 
 
 
