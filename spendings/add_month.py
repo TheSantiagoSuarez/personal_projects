@@ -45,7 +45,7 @@ def categorise(tag,category):
     df.loc[df['payment_concepto'].str.contains(tag, case=False, na=False), 'payment_type'] = category
 
 year = "2025"
-month = "03"
+month = "04"
 
 df = pd.read_excel(f"raw_excels/{year}_{month}.xls")
 df.columns = df.iloc[6]

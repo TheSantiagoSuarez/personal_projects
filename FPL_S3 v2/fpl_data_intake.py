@@ -8,6 +8,7 @@ import fpl_classes as classes
 def main(league, current_gw):
     # Raw Data
     data_raw = methods.get_data("https://draft.premierleague.com/api/bootstrap-static")
+    draft_picks_raw = methods.get_data(f"https://draft.premierleague.com/api/draft/{league}/choices")
     league_data_raw = methods.get_data(f"https://draft.premierleague.com/api/league/{league}/details")
     player_stats_raw = pd.Series({gw: methods.get_data(f"https://draft.premierleague.com/api/event/{gw}/live") for gw in range(1, current_gw + 1)})
     transfers_raw = methods.get_data(f"https://draft.premierleague.com/api/draft/league/{league}/transactions")
@@ -56,15 +57,17 @@ def main(league, current_gw):
 
         man.get_transfers(transfers)
 
+        man.get_draft_picks(draft_picks_raw["choices"], players)
 
 
-    data = {"players":players,"managers":managers,"transfers":transfers,"teams":teams, "players_raw":player_stats_raw}
+
+    data = {"players":players,"managers":managers,"transfers":transfers,"teams":teams, "draft_picks":draft_picks_raw}
 
 
     with open('season_data.pickle', 'wb') as handle:
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 if __name__ == "__main__":
-    gw = 32
+    gw = 36
     league = 2387
     main(league, gw)

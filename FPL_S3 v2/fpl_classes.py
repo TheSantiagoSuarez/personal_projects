@@ -8,6 +8,7 @@ class FPLmanager:
         self.lastname = lastname
         self.short_name = short_name
         self.team_name = team_name
+        self.podiums = {"1st":0,"2nd":0,"3rd":0,"last":0,"tottenham":0}
     
     def get_squad_formation(self, picks):
         formation = [0,0,0,0]
@@ -82,6 +83,13 @@ class FPLmanager:
             if transfer.manager == self:
                 manager_transfers.append(transfer)
         self.transfers = manager_transfers
+
+    def get_draft_picks(self,raw_draft_picks, players):
+        draft_picks = {}
+        for pick in raw_draft_picks:
+            if pick["entry"] == self.ID:
+                draft_picks[pick["round"]] = methods.get_player(pick["element"], players)
+        self.draft_picks = draft_picks
 
 class FPLplayer:
     def __init__(self, ID, name, team_id, position, photo):
