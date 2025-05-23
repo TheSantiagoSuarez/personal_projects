@@ -84,7 +84,7 @@ def main():
 
     # endregion
 
-    # region H2H
+    # region Draft H2H
 
     # making the table to calculate the best and worst head to heads for each manager
     h2h_df = pd.DataFrame(columns=["gw","manager","result","points", "opponent","opponent_points"])
@@ -101,7 +101,7 @@ def main():
 
     # endregion
 
-    # region Draft
+    # region Draft Picks
 
     # creating the table to rank the best and worst draft picks
     draft_picks_df = pd.DataFrame(columns=["manager_short","manager","player","pick","pts","gws"])
@@ -136,29 +136,98 @@ def main():
     player_findings = {}
 
     # Loyalty and Disappointments - Players who have stayed the most and least with each manager
-    
-    loyalty_df = pd.DataFrame(columns=["manager_short","manager","player","pos","team","pts","gw"])
+
+    owned_df = pd.DataFrame(columns=["manager_short","manager","player","pos","team","pts","gw"])
     for manager in managers:
         for gw, squad in manager.picks.items():
             for pos in range(1,16):
                 player = squad["pos "+str(pos)]
-                loyalty_df.loc[loyalty_df.shape[0]] = {"manager_short":manager.short_name,"manager":manager.name,"pos":pos,"player":player.ID,"team":player.team.name,"pts":player.points[gw],"gw":gw}
-    fielded = loyalty_df[loyalty_df["pos"]<=11]
-    player_findings["loyalty"] = loyalty_df.groupby(["manager_short","manager","player"])["gw"].count().sort_values()
+                owned_df.loc[owned_df.shape[0]] = {"manager_short":manager.short_name,"manager":manager.name,"pos":pos,"player":player.ID,"team":player.team.name,"pts":player.points[gw],"gw":gw}
+    fielded = owned_df[owned_df["pos"]<=11]
+    player_findings["loyalty"] = owned_df.groupby(["manager_short","manager","player"])["gw"].count().sort_values()
     
     # Joao Felix Award - Players who have played for the most different managers
+
+    player_findings["joao felix"] = owned_df[["player", "manager_short"]].drop_duplicates().groupby("player").count().sort_values("manager_short",ascending=False).head(10)
+
     # Club Mascot - The team each manager has fielded the most
+    
+    club_mascot = owned_df[owned_df["pos"]<=11].groupby(["manager_short","manager","team"])["player"].count().sort_values()
+    player_findings["club mascot"] = club_mascot
+    player_findings["season ticket"] = club_mascot.loc[club_mascot.groupby("team").idxmax()].sort_values()
+    
     # Star Players - The players with most points for each manager
 
+    star = fielded.groupby(["manager_short","manager","player"]).agg(
+        gws=('gw', 'count'),
+        pts=('pts', 'sum')
+    ).sort_values("pts",ascending=False).reset_index()
+    star["pts_gw"] = round(star["pts"]/star["gws"],2)
+    player_findings["star"] = star
+
+    findings["players"] = player_findings
     # endregion
 
     # region Transfers
+    transfer_findings = {}
 
     # Most Transfers - ranking what manager was most active in the transfer market
+
+    transfers_df = pd.DataFrame(columns=["manager_short_name","manager","num_transfers"])
+    for man in managers:
+        transfer_count = 0
+        for transfer in man.transfers:
+            if transfer.result == "a":
+                transfer_count+=1
+            
+        transfers_df.loc[transfers_df.shape[0]] = {"manager_short_name":man.short_name,"manager":man.name,"num_transfers": transfer_count}
+
+    transfer_findings["total_transfers"] = transfers_df.sort_values("num_transfers", ascending=False).reset_index(drop=True)
+
     # Love/hate relationship - ranking what player was most transferred in repeatedly by a single manager
+
+    love_hate = pd.DataFrame(columns=["manager_short_name","manager","player","num_transfers"])
+    for man in managers:
+        for tran in man.transfers:
+            if tran.result == "a":
+                if tran.player_in.name in love_hate["player"].values:
+                    love_hate.loc[love_hate["player"] == love_hate.player_in.name,"num_transfers"] += 1
+                else:
+                    love_hate.loc[love_hate.shape[0]] = {"manager_short_name":man.short_name,"manager":man.name,"player":tran.player_in.name, "num_transfers": 1}
+
+    transfer_findings["love_hate"] = love_hate.loc[love_hate["num_transfers"]>1].sort_values("num_transfers",ascending=False).reset_index(drop=True)
+
     # Best and Worst Transfers
 
+    best_worst = pd.DataFrame(columns=["manager_short_name","manager","gameweek","player_in","player_out","gws","in_pts","out_pts","pts_gain"])
+    for man in managers:                                            # for every manager
+        for tran in man.transfers:                                  # for every one of their transfers
+            in_pts = 0
+            out_pts = 0
+            gws = 0
+
+            if tran.result == "a":                                  # for every accepted transfer
+                tran_gw = tran.gameweek
+                player_in = tran.player_in
+                player_out = tran.player_out
+
+                for gw in range(tran_gw,min(tran_gw+3,current_gw)): # for the next three gws after the transfer
+                    position = 0
+                    for pos, player in man.picks[gw].items():       # check all the players in the manager's 11
+                        position += 1
+                        if position <= 15:
+                            if player == player_in:
+                                gws += 1
+                                in_pts += player.points[gw]
+                                out_pts += player_out.points[gw]
+                row = {"manager_short_name":man.short_name,"manager":man.name, "gameweek":tran_gw,"player_in":player_in.name, "player_out":player_out.name,"gws":gws,"in_pts":in_pts,"out_pts":out_pts,"pts_gain":in_pts-out_pts}
+                best_worst.loc[best_worst.shape[0]] = row
+
+    transfer_findings["best worst"] = best_worst.sort_values("pts_gain")
+
+    findings["transfers"] = transfer_findings    
     # endregion
+    return findings
 
 
 if __name__ == "__main__":
@@ -166,3 +235,6 @@ if __name__ == "__main__":
         data = pickle.load(file)
 
     findings = main(data)
+
+    with open('season_findings.pickle', 'wb') as handle:
+        pickle.dump(findings, handle, protocol=pickle.HIGHEST_PROTOCOL)
