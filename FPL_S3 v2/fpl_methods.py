@@ -56,7 +56,7 @@ def get_fixture_points(manager):
     return opponent_points, point_difference
 
 def get_stat_ranking(managers, target):
-    df = pd.DataFrame(columns=["manager_short_name","manager",target])
+    df = pd.DataFrame(columns=["manager",target])
 
     for manager in managers:
         picks = manager.picks
@@ -71,7 +71,7 @@ def get_stat_ranking(managers, target):
                     elif target == "dreamteam":
                         if player.stats[gw][target]:
                             target_amount += 1
-        row = {"manager_short_name":manager.short_name,"manager":manager.name,target: target_amount}
+        row = {"manager":manager.short_name,target: target_amount}
         df.loc[df.shape[0]] =  row   
     return df
 

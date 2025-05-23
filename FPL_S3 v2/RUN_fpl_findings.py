@@ -123,11 +123,13 @@ def main(data):
     # region Stats
 
     # ranks each manager by each one of these stats, good or bad
+    stats = []
     targets = ["goals_scored","assists","clean_sheets","goals_conceded","own_goals","penalties_saved","penalties_missed",
           "yellow_cards","red_cards","saves","bonus","in_dreamteam"]
 
     for target in targets:
-        findings[target] = methods.get_stat_ranking(managers, target)
+        stats.append(methods.get_stat_ranking(managers, target))
+    findings["stats"] = pd.concat([stats[0].iloc[:,:1]]+[df.iloc[:,-1]for df in stats],axis=1)
         
 
     # endregion
@@ -174,14 +176,12 @@ def main(data):
     # Most Transfers - ranking what manager was most active in the transfer market
 
     transfers_df = pd.DataFrame(columns=["manager_short_name","manager","num_transfers"])
-    for man in managers:
-        transfer_count = 0
-        for transfer in man.transfers:
-            if transfer.result == "a":
-                transfer_count+=1
-            
-        transfers_df.loc[transfers_df.shape[0]] = {"manager_short_name":man.short_name,"manager":man.name,"num_transfers": transfer_count}
+    for transfer in transfers:
+        man = transfer.manager
+        if transfer.result == "a":
+            transfers_df.loc[transfers_df.shape[0]] = {"manager_short_name":man.short_name,"manager":man.name,"num_transfers": transfer.result}
 
+    transfers_df = transfers_df.groupby(["manager_short_name","manager"]).count().reset_index()
     transfer_findings["total_transfers"] = transfers_df.sort_values("num_transfers", ascending=False).reset_index(drop=True)
 
     # Love/hate relationship - ranking what player was most transferred in repeatedly by a single manager
@@ -227,6 +227,7 @@ def main(data):
 
     findings["transfers"] = transfer_findings    
     # endregion
+    
     return findings
 
 
