@@ -66,8 +66,10 @@ def main(league, current_gw):
 
     with open('season_data.pickle', 'wb') as handle:
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    return data
 
 if __name__ == "__main__":
     gw = 36
     league = 2387
-    main(league, gw)
+    data = main(league, gw)
