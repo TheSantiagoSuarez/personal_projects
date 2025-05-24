@@ -37,7 +37,7 @@ def main(data):
     points = findings["total"]
 
     data_frames = [h2h_points, wins, draws, losses, points]
-    findings["standings"] = reduce(lambda left, right: pd.merge(left, right, on=['manager_short_name', 'manager']), data_frames)
+    findings["standings"] = reduce(lambda left, right: pd.merge(left, right, on=['manager_short', 'manager']), data_frames)
 
     # endregion
 
@@ -73,12 +73,13 @@ def main(data):
         manager.podiums["1st"] = len(gw_points[(gw_points["manager"]==manager)&(gw_points["rank"]==1)])
         manager.podiums["2nd"] = len(gw_points[(gw_points["manager"]==manager)&(gw_points["rank"]==2)])
         manager.podiums["3rd"] = len(gw_points[(gw_points["manager"]==manager)&(gw_points["rank"]==3)])
+        manager.podiums["Total"] = manager.podiums["1st"]+manager.podiums["2nd"]+manager.podiums["3rd"]
         manager.podiums["last"] = len(gw_points[(gw_points["manager"]==manager)&(gw_points["rank"]==14)])
         manager.podiums["tottenham"] = (tottenham,streak)
 
-    podiums = pd.DataFrame(columns=["manager","1st","2nd","3rd","last","tottenham","streak"])
+    podiums = pd.DataFrame(columns=["manager_short","1st","2nd","3rd","Total","last","tottenham","streak"])
     for manager in managers:
-        podiums.loc[podiums.shape[0]] = {"manager":manager.name + manager.lastname[0],"1st":manager.podiums["1st"],"2nd":manager.podiums["2nd"],"3rd":manager.podiums["3rd"],"last":manager.podiums["last"],"tottenham":manager.podiums["tottenham"][0],"streak":manager.podiums["tottenham"][1]}
+        podiums.loc[podiums.shape[0]] = {"manager_short":manager.short_name,"1st":manager.podiums["1st"],"2nd":manager.podiums["2nd"],"3rd":manager.podiums["3rd"],"Total":manager.podiums["Total"],"last":manager.podiums["last"],"tottenham":manager.podiums["tottenham"][0],"streak":manager.podiums["tottenham"][1]}
 
     findings["streaks"] = podiums
 
@@ -175,31 +176,31 @@ def main(data):
 
     # Most Transfers - ranking what manager was most active in the transfer market
 
-    transfers_df = pd.DataFrame(columns=["manager_short_name","manager","num_transfers"])
+    transfers_df = pd.DataFrame(columns=["manager_short","manager","num_transfers"])
     for transfer in transfers:
         man = transfer.manager
         if transfer.result == "a":
-            transfers_df.loc[transfers_df.shape[0]] = {"manager_short_name":man.short_name,"manager":man.name,"num_transfers": transfer.result}
+            transfers_df.loc[transfers_df.shape[0]] = {"manager_short":man.short_name,"manager":man.name,"num_transfers": transfer.result}
 
-    transfers_df = transfers_df.groupby(["manager_short_name","manager"]).count().reset_index()
+    transfers_df = transfers_df.groupby(["manager_short","manager"]).count().reset_index()
     transfer_findings["total_transfers"] = transfers_df.sort_values("num_transfers", ascending=False).reset_index(drop=True)
 
     # Love/hate relationship - ranking what player was most transferred in repeatedly by a single manager
 
-    love_hate = pd.DataFrame(columns=["manager_short_name","manager","player","num_transfers"])
+    love_hate = pd.DataFrame(columns=["manager_short","manager","player","num_transfers"])
     for man in managers:
         for tran in man.transfers:
             if tran.result == "a":
                 if tran.player_in.name in love_hate["player"].values:
                     love_hate.loc[love_hate["player"] == tran.player_in.name,"num_transfers"] += 1
                 else:
-                    love_hate.loc[love_hate.shape[0]] = {"manager_short_name":man.short_name,"manager":man.name,"player":tran.player_in.name, "num_transfers": 1}
+                    love_hate.loc[love_hate.shape[0]] = {"manager_short":man.short_name,"manager":man.name,"player":tran.player_in.name, "num_transfers": 1}
 
     transfer_findings["love_hate"] = love_hate.loc[love_hate["num_transfers"]>1].sort_values("num_transfers",ascending=False).reset_index(drop=True)
 
     # Best and Worst Transfers
 
-    best_worst = pd.DataFrame(columns=["manager_short_name","manager","gameweek","player_in","player_out","gws","in_pts","out_pts","pts_gain"])
+    best_worst = pd.DataFrame(columns=["manager_short","manager","gameweek","player_in","player_out","gws","in_pts","out_pts","pts_gain"])
     for man in managers:                                            # for every manager
         for tran in man.transfers:                                  # for every one of their transfers
             in_pts = 0
@@ -220,7 +221,7 @@ def main(data):
                                 gws += 1
                                 in_pts += player.points[gw]
                                 out_pts += player_out.points[gw]
-                row = {"manager_short_name":man.short_name,"manager":man.name, "gameweek":tran_gw,"player_in":player_in.name, "player_out":player_out.name,"gws":gws,"in_pts":in_pts,"out_pts":out_pts,"pts_gain":in_pts-out_pts}
+                row = {"manager_short":man.short_name,"manager":man.name, "gameweek":tran_gw,"player_in":player_in.name, "player_out":player_out.name,"gws":gws,"in_pts":in_pts,"out_pts":out_pts,"pts_gain":in_pts-out_pts}
                 best_worst.loc[best_worst.shape[0]] = row
 
     transfer_findings["best worst"] = best_worst.sort_values("pts_gain")
@@ -237,7 +238,7 @@ if __name__ == "__main__":
     with open('season_data.pickle','rb') as file:
         data = pickle.load(file)
 
-    #data = fpl_data_intake.main(gw, league)
+    #data = fpl_data_intake.main(league, gw)
 
     findings = main(data)
 

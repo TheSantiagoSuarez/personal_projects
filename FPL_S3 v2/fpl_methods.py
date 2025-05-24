@@ -167,7 +167,7 @@ def optimise_bench(manager, gw):            #####change format so that we build 
 # returns a df in order of target (like points) for subtarget (like gk)
 # basically, returns an ordered table of the highest points for [gk, def, mid, etc...]
 def get_ranking(managers,target,subtarget=None): 
-    df = pd.DataFrame(columns=["manager_short_name","manager",target])
+    df = pd.DataFrame(columns=["manager_short","manager",target])
     for manager in managers:
         manager_name = manager.name + " " + manager.lastname[0]
         if subtarget == None:
@@ -179,7 +179,7 @@ def get_ranking(managers,target,subtarget=None):
     return df.sort_values(target,ascending=False).reset_index(drop=True)
 
 def get_ranking_gw(managers, target, subtarget):
-    df = pd.DataFrame(columns=["manager_short_name","manager", "gw", "points"])
+    df = pd.DataFrame(columns=["manager_short","manager", "gw", "points"])
     for manager in managers:
         manager_name = manager.name + " " + manager.lastname[0]
         for gw, value in manager.standings[target][subtarget].items():
@@ -190,7 +190,7 @@ def result_history(managers, target, current_gw):
     history = {}
 
     for gw in range(1,current_gw+1):
-        df = pd.DataFrame(columns=["manager_short_name", "manager", "points"])
+        df = pd.DataFrame(columns=["manager_short", "manager", "points"])
         for manager in managers:
             points = manager.standings["points"][target][gw]
             df.loc[len(df.index)]= [manager.short_name, manager.name, points]
