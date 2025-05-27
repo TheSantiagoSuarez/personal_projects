@@ -105,7 +105,7 @@ def main(data):
     # region Draft Picks
 
     # creating the table to rank the best and worst draft picks
-    draft_picks_df = pd.DataFrame(columns=["manager_short","manager","player","pick","pts","gws"])
+    draft_picks_df = pd.DataFrame(columns=["manager_short","player","pick","points","gws"])
     for pick in range(1,16):
         for manager in managers:
             player = manager.draft_picks[pick]
@@ -116,8 +116,8 @@ def main(data):
                         if squad["pos "+str(pos)] == player:
                             gws += 1
                             points += player.points[gw]
-            draft_picks_df.loc[draft_picks_df.shape[0]] = {"manager_short":manager.short_name,"manager":manager.name,"player":player.name,"pick":pick,"pts":points,"gws":gws}
-    findings["draft_picks"] = draft_picks_df.sort_values("pts",ascending=False)
+            draft_picks_df.loc[draft_picks_df.shape[0]] = {"manager_short":manager.short_name,"player":player.name,"pick":pick,"points":points,"gws":gws}
+    findings["draft_picks"] = draft_picks_df.sort_values("points",ascending=False)
 
     # endregion
 
@@ -140,33 +140,33 @@ def main(data):
 
     # Loyalty and Disappointments - Players who have stayed the most and least with each manager
 
-    owned_df = pd.DataFrame(columns=["manager_short","manager","player","pos","team","pts","gw"])
+    owned_df = pd.DataFrame(columns=["manager_short","player","pos","team","points","gw"])
     for manager in managers:
         for gw, squad in manager.picks.items():
             for pos in range(1,16):
                 player = squad["pos "+str(pos)]
-                owned_df.loc[owned_df.shape[0]] = {"manager_short":manager.short_name,"manager":manager.name,"pos":pos,"player":player.ID,"team":player.team.name,"pts":player.points[gw],"gw":gw}
+                owned_df.loc[owned_df.shape[0]] = {"manager_short":manager.short_name,"pos":pos,"player":player.ID,"team":player.team.name,"points":player.points[gw],"gw":gw}
     fielded = owned_df[owned_df["pos"]<=11]
-    player_findings["loyalty"] = owned_df.groupby(["manager_short","manager","player"])["gw"].count().sort_values()
+    player_findings["loyalty"] = owned_df.groupby(["manager_short","player"]).agg(gw=("gw", "count"), points=("points", "sum")).reset_index()
     
     # Joao Felix Award - Players who have played for the most different managers
 
-    player_findings["joao felix"] = owned_df[["player", "manager_short"]].drop_duplicates().groupby("player").count().sort_values("manager_short",ascending=False).head(10)
+    player_findings["joao felix"] = owned_df[["player", "manager_short"]].drop_duplicates().groupby("player").agg(count=("manager_short", "count")).sort_values("count",ascending=False).reset_index()
 
     # Club Mascot - The team each manager has fielded the most
     
-    club_mascot = owned_df[owned_df["pos"]<=11].groupby(["manager_short","manager","team"])["player"].count().sort_values()
+    club_mascot = fielded.groupby(["manager_short", "team"]).agg(points=("points", "sum"), count=("points", "count")).reset_index()
     player_findings["club mascot"] = club_mascot
-    player_findings["season ticket"] = club_mascot.loc[club_mascot.groupby("team").idxmax()].sort_values()
+    player_findings["season ticket"] = club_mascot.loc[club_mascot.groupby("team")["count"].idxmax()].sort_values("points", ascending=False)
     
     # Star Players - The players with most points for each manager
 
-    star = fielded.groupby(["manager_short","manager","player"]).agg(
+    star = fielded.groupby(["manager_short","player"]).agg(
         gws=('gw', 'count'),
-        pts=('pts', 'sum')
-    ).sort_values("pts",ascending=False).reset_index()
-    star["pts_gw"] = round(star["pts"]/star["gws"],2)
-    player_findings["star"] = star
+        points=("points", 'sum')
+    ).sort_values("points",ascending=False).reset_index()
+    star["ppg"] = round(star["points"]/star["gws"],2)
+    player_findings["star"] = star[star["gws"]>=5]
 
     findings["players"] = player_findings
     # endregion
@@ -176,31 +176,31 @@ def main(data):
 
     # Most Transfers - ranking what manager was most active in the transfer market
 
-    transfers_df = pd.DataFrame(columns=["manager_short","manager","num_transfers"])
+    transfers_df = pd.DataFrame(columns=["manager_short","num_transfers"])
     for transfer in transfers:
         man = transfer.manager
         if transfer.result == "a":
-            transfers_df.loc[transfers_df.shape[0]] = {"manager_short":man.short_name,"manager":man.name,"num_transfers": transfer.result}
+            transfers_df.loc[transfers_df.shape[0]] = {"manager_short":man.short_name,"num_transfers": transfer.result}
 
-    transfers_df = transfers_df.groupby(["manager_short","manager"]).count().reset_index()
-    transfer_findings["total_transfers"] = transfers_df.sort_values("num_transfers", ascending=False).reset_index(drop=True)
+    transfers_df = transfers_df.groupby(["manager_short"]).count().reset_index()
+    transfer_findings["total transfers"] = transfers_df.sort_values("num_transfers", ascending=False).reset_index(drop=True)
 
     # Love/hate relationship - ranking what player was most transferred in repeatedly by a single manager
 
-    love_hate = pd.DataFrame(columns=["manager_short","manager","player","num_transfers"])
+    love_hate = pd.DataFrame(columns=["manager_short","player","player_name","num_transfers"])
     for man in managers:
         for tran in man.transfers:
             if tran.result == "a":
-                if tran.player_in.name in love_hate["player"].values:
-                    love_hate.loc[love_hate["player"] == tran.player_in.name,"num_transfers"] += 1
+                if tran.player_in.ID in love_hate["player"].values:
+                    love_hate.loc[love_hate["player"] == tran.player_in.ID,"num_transfers"] += 1
                 else:
-                    love_hate.loc[love_hate.shape[0]] = {"manager_short":man.short_name,"manager":man.name,"player":tran.player_in.name, "num_transfers": 1}
+                    love_hate.loc[love_hate.shape[0]] = {"manager_short":man.short_name,"player":tran.player_in.ID,"player_name":tran.player_in.name, "num_transfers": 1}
 
-    transfer_findings["love_hate"] = love_hate.loc[love_hate["num_transfers"]>1].sort_values("num_transfers",ascending=False).reset_index(drop=True)
+    transfer_findings["love hate"] = love_hate.loc[love_hate["num_transfers"]>1].sort_values("num_transfers",ascending=False).reset_index(drop=True)
 
     # Best and Worst Transfers
 
-    best_worst = pd.DataFrame(columns=["manager_short","manager","gameweek","player_in","player_out","gws","in_pts","out_pts","pts_gain"])
+    best_worst = pd.DataFrame(columns=["manager_short","gameweek","player","player_name","player_out","player_out_name","gws","in_pts","out_pts","pts_gain"])
     for man in managers:                                            # for every manager
         for tran in man.transfers:                                  # for every one of their transfers
             in_pts = 0
@@ -221,7 +221,7 @@ def main(data):
                                 gws += 1
                                 in_pts += player.points[gw]
                                 out_pts += player_out.points[gw]
-                row = {"manager_short":man.short_name,"manager":man.name, "gameweek":tran_gw,"player_in":player_in.name, "player_out":player_out.name,"gws":gws,"in_pts":in_pts,"out_pts":out_pts,"pts_gain":in_pts-out_pts}
+                row = {"manager_short":man.short_name, "gameweek":tran_gw,"player":player_in.ID,"player_name":player_in.name, "player_out":player_out.ID,"player_out_name":player_out.name,"gws":gws,"in_pts":in_pts,"out_pts":out_pts,"pts_gain":in_pts-out_pts}
                 best_worst.loc[best_worst.shape[0]] = row
 
     transfer_findings["best worst"] = best_worst.sort_values("pts_gain")

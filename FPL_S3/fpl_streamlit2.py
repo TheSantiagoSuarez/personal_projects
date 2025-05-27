@@ -610,7 +610,7 @@ def stats(findings, stats, bench_stats, ___):
             st.markdown("<hr>", unsafe_allow_html=True)
 
 def transfers(_, __,___, full_data):
-    manager = st.sidebar.selectbox("Choose Manager", ("YE","WN","SL","RK","ST","SS","AA","YA1","SB","YA","ES","AC"))    
+    manager = st.sidebar.selectbox("Choose Manager", ("YE","WN","SL","RK","ST","SS","AA","YA1","SB","YA","ES","AC"))
     
     if manager != "Everyone":
         st.sidebar.image("pictures/{}.png".format(manager.lower()), caption=manager,width=200)
