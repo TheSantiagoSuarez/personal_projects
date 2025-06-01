@@ -2,7 +2,7 @@ import pandas as pd
 import pickle
 
 import personal_projects.FPL_S3.fpl_methods as methods
-import fpl_classes as classes
+import personal_projects.FPL_S3.fpl_classes as classes
 
 
 def main(league, current_gw):
