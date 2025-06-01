@@ -6,6 +6,8 @@ import pickle
 
 import fpl_methods as methods
 
+print(pd.__version__)
+
 file_path = os.path.join(os.path.dirname(__file__), 'season_data.pickle')
 with open(file_path, 'rb') as file:
     raw_data = pickle.load(file)
