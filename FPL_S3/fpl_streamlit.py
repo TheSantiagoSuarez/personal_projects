@@ -10,9 +10,7 @@ print("HERE IS THE VERSION",pd.__version__)
 print("HERE IS THE VERSION",st.__version__)
 
 file_path = os.path.join(os.path.dirname(__file__), 'season_data.pickle')
-with open(file_path, 'rb') as file:
-    raw_data = pickle.load(file)
-
+raw_data = pd.read_pickle(file_path)
 
 # Podium function
 def display_podium(title,df,column=2,value="points"):
@@ -972,11 +970,9 @@ if __name__ == "__main__":
     #findings, stats, bench_stats, full_data = fpl_findings.main(int(gw),league)
 
     file_path = os.path.join(os.path.dirname(__file__), 'season_findings.pickle')
-    with open(file_path, 'rb') as file:
-        findings = pickle.load(file)
-    
+    findings = pd.read_pickle(file_path)
+
     file_path = os.path.join(os.path.dirname(__file__), 'season_data.pickle')
-    with open(file_path, 'rb') as file:
-        data = pickle.load(file)
+    data = pd.read_pickle(file_path)
 
     main(findings, data)
