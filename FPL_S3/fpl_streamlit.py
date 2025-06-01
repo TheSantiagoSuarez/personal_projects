@@ -968,11 +968,12 @@ if __name__ == "__main__":
     #league = st.text_input("Enter league code (akoya = 41570): ")
     #findings, stats, bench_stats, full_data = fpl_findings.main(int(gw),league)
 
-    with open ('season_findings.pickle','rb') as file:
+    file_path = os.path.join(os.path.dirname(__file__), 'season_findings.pickle')
+    with open(file_path, 'rb') as file:
         findings = pickle.load(file)
-
     
-    with open ('season_data.pickle','rb') as file:
+    file_path = os.path.join(os.path.dirname(__file__), 'season_data.pickle')
+    with open(file_path, 'rb') as file:
         data = pickle.load(file)
 
     main(findings, data)
