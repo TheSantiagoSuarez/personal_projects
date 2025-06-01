@@ -1,4 +1,4 @@
-import personal_projects.FPL_S3.fpl_methods as methods
+import fpl_methods as methods
 
 class FPLmanager:
     def __init__(self, ID, id2, name, lastname, short_name, team_name):
