@@ -9,6 +9,8 @@ import fpl_methods as methods
 print("HERE IS THE VERSION",pd.__version__)
 print("HERE IS THE VERSION",st.__version__)
 
+picture_path = os.path.dirname(__file__)+"/"
+
 file_path = os.path.join(os.path.dirname(__file__), 'season_data.pickle')
 raw_data = pd.read_pickle(file_path)
 
@@ -25,19 +27,19 @@ def display_podium(title,df,column=2,value="points"):
 
         # Print the list of files in the directory
         print("Files in directory:", os.listdir())
-        st.image("pictures/{}.png".format(df.loc[1, "manager_short"].lower()))
+        st.image(picture_path+"pictures/{}.png".format(df.loc[1, "manager_short"].lower()))
         st.subheader("🥈") 
         st.text("{}: {} {}".format(df.loc[1, "manager_short"], round(df.iloc[1][column]),value))
 
     with col2:
-        st.image("pictures/{}.png".format(df.loc[0, "manager_short"].lower()))
+        st.image(picture_path+"pictures/{}.png".format(df.loc[0, "manager_short"].lower()))
         st.subheader("🥇")
         st.text("{}: {} {}".format(df.loc[0, "manager_short"], round(df.iloc[0][column]),value))
 
     with col3:
         st.write("")
         st.write("")
-        st.image("pictures/{}.png".format(df.loc[2, "manager_short"].lower()))
+        st.image(picture_path+"pictures/{}.png".format(df.loc[2, "manager_short"].lower()))
         st.subheader("🥉") 
         st.text("{}: {} {}".format(df.loc[2, "manager_short"], round(df.iloc[2][column]),value))
 
@@ -49,7 +51,7 @@ def display_podium(title,df,column=2,value="points"):
         st.write("")
         st.write("")
         st.write("")
-        st.image("pictures/{}.png".format(df.loc[len(df)-1, "manager_short"].lower()))
+        st.image(picture_path+"pictures/{}.png".format(df.loc[len(df)-1, "manager_short"].lower()))
         st.subheader("💩",)
         st.text("{}: {} {}".format(df.loc[len(df)-1, "manager_short"], round(df.iloc[len(df)-1][column]),value))
 
@@ -68,13 +70,13 @@ def display_stats(df, column, titles, metric):
             tied_manager= df.index[1]
             cols1,cols2 = st.columns(2)
             with cols1:
-                st.image("pictures/{}.png".format(win_manager.lower()),width=80)
+                st.image(picture_path+"pictures/{}.png".format(win_manager.lower()),width=80)
             with cols2:
-                st.image("pictures/{}.png".format(tied_manager.lower()),width=80)
+                st.image(picture_path+"pictures/{}.png".format(tied_manager.lower()),width=80)
             st.text("{} & {}:".format(win_manager,tied_manager))        
             st.text("{} {}".format(round(df.iloc[0]),metric))
         else:
-            st.image("pictures/{}.png".format(win_manager.lower()),width=160)
+            st.image(picture_path+"pictures/{}.png".format(win_manager.lower()),width=160)
             st.text("{}:".format(win_manager))        
             st.text("{} {}".format(round(df.iloc[0]),metric))
 
@@ -83,13 +85,13 @@ def display_stats(df, column, titles, metric):
             tied_manager= df.index[len(df)-2]
             cols1,cols2 = st.columns(2)
             with cols1:
-                st.image("pictures/{}.png".format(loss_manager.lower()),width=80)
+                st.image(picture_path+"pictures/{}.png".format(loss_manager.lower()),width=80)
             with cols2:
-                st.image("pictures/{}.png".format(tied_manager.lower()),width=80)
+                st.image(picture_path+"pictures/{}.png".format(tied_manager.lower()),width=80)
             st.text("{} & {}:".format(loss_manager,tied_manager)) 
             st.text("{} {}".format(round(df.iloc[len(df)-1]),metric))
         else: 
-            st.image("pictures/{}.png".format(loss_manager.lower()),width=160)
+            st.image(picture_path+"pictures/{}.png".format(loss_manager.lower()),width=160)
             st.text("{}:".format(loss_manager))
             st.text("{} {}".format(round(df.iloc[len(df)-1]),metric))
     with tab3:
@@ -438,7 +440,7 @@ def players(findings, data):
     manager_data = next((man for man in data["managers"] if man.short_name == manager), None)
     manager_pts = int(sum(manager_data.standings["points"]["total"].values()))
 
-    st.sidebar.image("pictures/{}.png".format(manager.lower()), caption=manager,width=200)
+    st.sidebar.image(picture_path+"pictures/{}.png".format(manager.lower()), caption=manager,width=200)
 
     st.sidebar.markdown("Page Guide")
     st.sidebar.markdown("1. [Loyalty](#loyalty)")
@@ -615,7 +617,7 @@ def h2h(findings, data):
     manager_data = next((man for man in data["managers"] if man.short_name == manager), None)
 
     try:    
-        st.sidebar.image("pictures/{}.png".format(manager.lower()), caption=manager,width=200)
+        st.sidebar.image(picture_path+"pictures/{}.png".format(manager.lower()), caption=manager,width=200)
     except:
         print("")
         
@@ -680,12 +682,12 @@ def h2h(findings, data):
             cols = st.columns(4)
             with cols[0]:
                 man = biggest['manager'].values[0]
-                st.image("pictures/{}.png".format(man.lower()), caption=man)
+                st.image(picture_path+"pictures/{}.png".format(man.lower()), caption=man)
             with cols[1]:
                 st.subheader(f"{biggest['points'].values[0]} points")
             with cols[2]:
                 opp_manager = biggest['opponent'].values[0].short_name
-                st.image("pictures/{}.png".format(opp_manager.lower()), caption=opp_manager)
+                st.image(picture_path+"pictures/{}.png".format(opp_manager.lower()), caption=opp_manager)
             with cols[3]:
                 st.subheader(f"{biggest['opponent_points'].values[0]} points")
             
@@ -699,12 +701,12 @@ def h2h(findings, data):
             cols = st.columns(4)
             with cols[0]:
                 man = closest['manager'].values[0]
-                st.image("pictures/{}.png".format(man.lower()), caption=man)
+                st.image(picture_path+"pictures/{}.png".format(man.lower()), caption=man)
             with cols[1]:
                 st.subheader(f"{closest['points'].values[0]} points")
             with cols[2]:
                 opp_manager = closest['opponent'].values[0].short_name
-                st.image("pictures/{}.png".format(opp_manager.lower()), caption=opp_manager)
+                st.image(picture_path+"pictures/{}.png".format(opp_manager.lower()), caption=opp_manager)
             with cols[3]:
                 st.subheader(f"{closest['opponent_points'].values[0]} points")
 
@@ -738,7 +740,7 @@ def h2h(findings, data):
 
         with cols[0]:
             man = row['manager']
-            st.image("pictures/{}.png".format(man.lower()), caption=man,width=100)
+            st.image(picture_path+"pictures/{}.png".format(man.lower()), caption=man,width=100)
 
         with cols[1]:
             wins = 0 if pd.isna(row['W']) else int(row['W'])
@@ -751,7 +753,7 @@ def h2h(findings, data):
 
         with cols[2]:
             opp_manager = row['opponent']
-            st.image("pictures/{}.png".format(opp_manager.lower()), caption=opp_manager,width=100)
+            st.image(picture_path+"pictures/{}.png".format(opp_manager.lower()), caption=opp_manager,width=100)
         
         st.markdown("<hr>", unsafe_allow_html=True)
 
@@ -767,7 +769,7 @@ def draft(findings, data):
     manager = st.sidebar.selectbox("Choose Manager",[man.short_name for man in data["managers"]])
     manager_data = next((man for man in data["managers"] if man.short_name == manager), None)
 
-    st.sidebar.image("pictures/{}.png".format(manager.lower()), caption=manager,width=200)
+    st.sidebar.image(picture_path+"pictures/{}.png".format(manager.lower()), caption=manager,width=200)
 
 
     st.header("Draft Picks")
@@ -846,7 +848,7 @@ def stats(findings, data):
 def transfers(findings, data):
     manager = st.sidebar.selectbox("Choose Manager",["Everyone"]+[man.short_name for man in data["managers"]])
     if manager != "Everyone":
-        st.sidebar.image("pictures/{}.png".format(manager.lower()), caption=manager,width=200)
+        st.sidebar.image(picture_path+"pictures/{}.png".format(manager.lower()), caption=manager,width=200)
 
     st.sidebar.markdown("Page Guide")
     st.sidebar.markdown("1. [Total Transfers Ranking](#total-transfers-ranking)")
