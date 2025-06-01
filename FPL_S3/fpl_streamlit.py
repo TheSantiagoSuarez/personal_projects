@@ -27,7 +27,7 @@ def display_podium(title,df,column=2,value="points"):
 
         # Print the list of files in the directory
         print("Files in directory:", os.listdir())
-        st.image(picture_path+"pictures/{}.png".format(df.loc[1, "manager_short"].lower()))
+        st.image("FPL_S3/pictures/{}.png".format(df.loc[1, "manager_short"].lower()))
         st.subheader("🥈") 
         st.text("{}: {} {}".format(df.loc[1, "manager_short"], round(df.iloc[1][column]),value))
 
