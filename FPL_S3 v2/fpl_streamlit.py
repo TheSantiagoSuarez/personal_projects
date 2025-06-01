@@ -104,7 +104,7 @@ def show_player(data,num, points=False, metric="gameweeks"):
     #st.table(data.head())
     player = methods.get_player(data.loc[num,"player"],raw_data["players"])
     print_pic(player)
-    if data.loc[num,"player"]==36:
+    if data.loc[num,"metric"]==38:
         st.markdown("{} ✅".format(player.name))
     else:
         st.markdown("{}".format(player.name))
@@ -123,6 +123,8 @@ def show_player(data,num, points=False, metric="gameweeks"):
         st.success("{} points per game".format(round(data.loc[num,"points"]/data.loc[num,"player"],2)))
     elif points=="manager":
         st.markdown("By {}".format(data.loc[num,"manager_short"]))
+    elif points=="draft":
+        st.markdown("In {} gws".format(data.loc[num,"gws"]))
 
 def show_most_teams(data, num, manager_data):
     player = methods.get_player(data.loc[num,"player"],raw_data["players"])
@@ -439,7 +441,7 @@ def players(findings, data):
 
     st.sidebar.markdown("Page Guide")
     st.sidebar.markdown("1. [Loyalty](#loyalty)")
-    st.sidebar.markdown("2. [UnLoyalty](#unloyalty)")
+    st.sidebar.markdown("2. [Disappointments](#disappointments)")
     st.sidebar.markdown("3. [Most Teams](#most-teams)")
     st.sidebar.markdown("4. [Club Mascot](#club-mascot)")
     st.sidebar.markdown("4. [Season Ticket Holder](#season-ticket-holder)")
@@ -447,12 +449,9 @@ def players(findings, data):
 
     st.markdown(" ")
     st.info("Choosing who to have in your team was hard, unless you just chose Arsenal players and called it a day")
-    st.info("Let's first look at who has stuck with you through thick and thin, and ask yourself why Ali was such a lucky bitch for getting Haaland as his first pick. Let's look at...")
+    st.info("Let's first look at who has stuck with you through thick and thin, and ask yourself how Youssed has gotten Salah for a third year in a row. Let's look at...")
     st.header("Loyalty")
     st.markdown("The players you've owned the longest")
-
-    
-    real_ranking = findings['total']
 
     #region Loyalty
     loyalty = findings["players"]['loyalty']
@@ -467,10 +466,10 @@ def players(findings, data):
     #endregion
             
     st.markdown("<hr>", unsafe_allow_html=True)
-    st.header("UnLoyalty")
-    st.markdown("The opposite of the last one")
+    st.header("Disappointments")
+    st.markdown("Those players that you tried, but let go basically immediately")
     
-    #region Unloyalty?
+    #region Disappointments
     manager_df = loyalty[loyalty["manager_short"]==manager].sort_values("gw",ascending=True).reset_index(drop=True).iloc[:10]
     cols = st.columns(5)
 
@@ -501,7 +500,7 @@ def players(findings, data):
     #endregion
 
     st.markdown("<hr>", unsafe_allow_html=True)
-    st.info("Now, Ruslan's time to shine")
+    st.info("Now, a final farewell to Ruslan's scouting strategy")
 
     st.header("Club Mascot")
     st.markdown("A few stats based on how many players from a single club one has fielded")
@@ -606,10 +605,212 @@ def players(findings, data):
         st.markdown("*Must have played at least 5 games")
     #endregion
 
-def draft_h2h(findings, data):
+def h2h(findings, data):
     st.subheader("Head to Head")
-    st.markdown("Introducing in the Akoya Cup 3rd Edition, a new format. It doesn't matter how many points you get, just if you beat the dickhead you're going up against.")
+    st.markdown("For the Akoya Cup 3rd Edition, a repeat on the head to head format. It doesn't matter how many points you get, just if you beat the dickhead you're going up against.")
     st.markdown("Let's see how you did")
+    
+    manager = st.sidebar.selectbox("Choose Manager",["Everyone"]+[man.short_name for man in data["managers"]])
+    manager_data = next((man for man in data["managers"] if man.short_name == manager), None)
+
+    try:    
+        st.sidebar.image("pictures/{}.png".format(manager.lower()), caption=manager,width=200)
+    except:
+        print("")
+        
+    st.sidebar.markdown("Page Guide")
+    st.sidebar.markdown("1. [Season Battles](#season-battles)")
+    st.sidebar.markdown("2. [Head to Head Stats](#head-to-head-stats)")
+    st.sidebar.markdown("3. [Head to Head Record](#head-to-head-record)")
+
+    
+    st.header("Season Battles")
+    st.markdown("A visualisation on some rivalries throughout the season")
+
+    # region Season Battles
+
+    tabs = st.tabs(["Turkish Derby","Youssef Derby","Deloitte Derby","The student that became the master","Pseudo El Clásico","Gooner Derby","Debutant Derby"])
+
+    pairs = [("AA","ES"),("YE","YA"),("WN","SB"),("KS","ST"),("SL","SS"),("RK","YA1"),("pa","AB")]
+
+    for i in range(len(tabs)):
+        with tabs[i]:
+            st.image(f"graphs/{pairs[i][0]}-{pairs[i][1]}_h2h.gif")
+
+    # endregion
+    
+    st.header("Head to Head Stats")
+    st.markdown("Some of the biggest wipeouts, closest ties, and other interesting info")
+
+    # region Head to Head Stats
+
+    data = findings["h2h"]
+    tabs = st.tabs(["Wins", "Losses"])
+    metric = ["Win", "Loss"]
+
+    for i in range(2):
+        if manager == "Everyone":
+            df = data.loc[data["result"]==metric[i][0]]
+        else:
+            df = data.loc[(data["manager"] == manager)&(data["result"]==metric[i][0])]
+        avg_pts = df["points"].mean()
+        avg_opp_pts = df["opponent_points"].mean()
+
+        with tabs[i]:
+            cols = st.columns(2)
+            with cols[0]:
+                st.markdown(f"In your average {metric[i]}, you had")
+                st.subheader(f"{round(avg_pts,2)} points")
+            
+            with cols[1]:
+                st.markdown(f"In your average {metric[i]}, they had")
+                st.subheader(f"{round(avg_opp_pts,2)} points")
+            
+            biggest = df.loc[df["point_diff"].abs()==max(df["point_diff"].abs())]
+            closest = df.loc[df["point_diff"].abs()==min(df["point_diff"].abs())]
+                
+            st.markdown("<hr>", unsafe_allow_html=True)
+
+            # Biggest Win / Loss
+            st.subheader(f"Biggest {metric[i]}")
+            st.markdown(f"In gameweek {biggest['gw'].values[0]}, the point difference was {biggest['point_diff'].values[0]} points")
+            #st.subheader(f"{big_diff['point_diff'].values[0]} points")
+
+            cols = st.columns(4)
+            with cols[0]:
+                man = biggest['manager'].values[0]
+                st.image("pictures/{}.png".format(man.lower()), caption=man)
+            with cols[1]:
+                st.subheader(f"{biggest['points'].values[0]} points")
+            with cols[2]:
+                opp_manager = biggest['opponent'].values[0].short_name
+                st.image("pictures/{}.png".format(opp_manager.lower()), caption=opp_manager)
+            with cols[3]:
+                st.subheader(f"{biggest['opponent_points'].values[0]} points")
+            
+            st.markdown("<hr>", unsafe_allow_html=True)
+            
+            # Closest Win / Loss
+            st.subheader(f"Closest {metric[i]}")
+            st.markdown(f"In gameweek {closest['gw'].values[0]}, the point difference was {closest['point_diff'].values[0]} points")
+            #st.subheader(f"{big_diff['point_diff'].values[0]} points")
+
+            cols = st.columns(4)
+            with cols[0]:
+                man = closest['manager'].values[0]
+                st.image("pictures/{}.png".format(man.lower()), caption=man)
+            with cols[1]:
+                st.subheader(f"{closest['points'].values[0]} points")
+            with cols[2]:
+                opp_manager = closest['opponent'].values[0].short_name
+                st.image("pictures/{}.png".format(opp_manager.lower()), caption=opp_manager)
+            with cols[3]:
+                st.subheader(f"{closest['opponent_points'].values[0]} points")
+
+
+    # endregion
+    
+    st.header("Head to Head Record")
+    st.markdown("Let's look at the most one sided rivalries")
+
+    # region H2H Record
+    if manager=="Everyone":
+        df = data
+    else:
+        df = data.loc[(data["manager"] == manager)]
+
+    df["opponent"] = df["opponent"].apply(lambda x: x.short_name)
+    h2h_df = pd.pivot_table(df, index=["manager","opponent"],columns="result",values="gw",aggfunc="count").sort_values("W",ascending=False).reset_index()
+
+    if manager == "Everyone":
+        h2h_df= h2h_df[:13] 
+
+    cols = st.columns(3)
+    with cols[1]:
+        st.subheader("W - D - L")
+
+    st.markdown("<hr>", unsafe_allow_html=True)
+
+    for i in range(len(h2h_df)):    
+        cols = st.columns(3)
+        row = h2h_df.loc[i]
+
+        with cols[0]:
+            man = row['manager']
+            st.image("pictures/{}.png".format(man.lower()), caption=man,width=100)
+
+        with cols[1]:
+            wins = 0 if pd.isna(row['W']) else int(row['W'])
+            losses = 0 if pd.isna(row['L']) else int(row['L'])
+            try:
+                draws = 0 if pd.isna(row['D']) else int(row['D'])
+                st.subheader(f"{wins} - {draws} - {losses}")
+            except:
+                st.subheader(f"{wins} - 0 - {losses}")
+
+        with cols[2]:
+            opp_manager = row['opponent']
+            st.image("pictures/{}.png".format(opp_manager.lower()), caption=opp_manager,width=100)
+        
+        st.markdown("<hr>", unsafe_allow_html=True)
+
+
+
+    # endregion
+
+def draft(findings, data):
+    st.subheader("Draft")
+    st.markdown("Some people might say FPL isn't about skill, it's all about who gets Salah, Haaland, or every Arsenal player")
+    st.markdown("Let's see how everyone else's 4th to 15th picks were better than yours")
+    
+    manager = st.sidebar.selectbox("Choose Manager",[man.short_name for man in data["managers"]])
+    manager_data = next((man for man in data["managers"] if man.short_name == manager), None)
+
+    st.sidebar.image("pictures/{}.png".format(manager.lower()), caption=manager,width=200)
+
+
+    st.header("Draft Picks")
+    st.markdown("The best excuse for whoever doesn't do well")
+
+    # region draft picks
+
+    data = findings["draft_picks"]
+
+    tabs = st.tabs(["1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th","11th","12th","13th","14th","15th"])
+
+    for pick_num in range(1,len(tabs)+1):
+        picks = data[data["pick"]==pick_num].sort_values("points",ascending=False).reset_index(drop=True)
+        
+        with tabs[pick_num-1]:
+            cols = st.columns(3)         
+            for i in range(3):
+                with cols[i]:
+                    show_player(picks.rename(columns={"points":"metric"}),i,"draft","points")
+                    if picks.loc[i,"manager_short"]==manager:
+                        st.success(manager)
+                    else:
+                        st.markdown(picks.loc[i,"manager_short"])
+            
+            cols = st.columns(5)          
+            for i in range(5):
+                with cols[i]:
+                    show_player(picks.rename(columns={"points":"metric"}),i+3,"draft","points")
+                    if picks.loc[i+3,"manager_short"]==manager:
+                        st.success(manager)
+                    else:
+                        st.markdown(picks.loc[i+3,"manager_short"])
+            
+            cols = st.columns(6)       
+            for i in range(6):
+                with cols[i]:
+                    show_player(picks.rename(columns={"points":"metric"}),i+8,"draft","points")
+                    if picks.loc[i+8,"manager_short"]==manager:
+                        st.success(manager)
+                    else:
+                        st.markdown(picks.loc[i+8,"manager_short"])
+    # endregion
+
+
 
 def stats(findings, data):
     data = findings["stats"]
@@ -732,13 +933,14 @@ def transfers(findings, data):
                 with cols[i]:
                     show_player(df,i,"manager","net points")
     with tab2:
-        st.write(df[["gameweek","manager_short","player_name","player_out","player_out_name","in_pts","out_pts"]])
+        st.write(df[["gameweek","manager_short","player_name","player_out_name","in_pts","out_pts"]])
     #endregion
 
 pages = {
     "Total Points": points,
     "Players": players,
-    "Draft & Head-to-head": draft_h2h,
+    "Draft": draft,
+    "Head-to-head":h2h,
     "General Stats" : stats,
     "Transfers" : transfers
 }

@@ -116,7 +116,7 @@ def main(data):
                         if squad["pos "+str(pos)] == player:
                             gws += 1
                             points += player.points[gw]
-            draft_picks_df.loc[draft_picks_df.shape[0]] = {"manager_short":manager.short_name,"player":player.name,"pick":pick,"points":points,"gws":gws}
+            draft_picks_df.loc[draft_picks_df.shape[0]] = {"manager_short":manager.short_name,"player":player.ID,"pick":pick,"points":points,"gws":gws}
     findings["draft_picks"] = draft_picks_df.sort_values("points",ascending=False)
 
     # endregion
@@ -233,12 +233,12 @@ def main(data):
 
 
 if __name__ == "__main__":
-    gw = 36
+    gw = 38
     league = 2387
     with open('season_data.pickle','rb') as file:
         data = pickle.load(file)
 
-    #data = fpl_data_intake.main(league, gw)
+    data = fpl_data_intake.main(league, gw)
 
     findings = main(data)
 
