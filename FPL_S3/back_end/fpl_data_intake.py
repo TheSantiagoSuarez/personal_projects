@@ -1,7 +1,7 @@
 import pandas as pd
 import pickle
 
-import fpl_methods as methods
+import personal_projects.FPL_S3.fpl_methods as methods
 import fpl_classes as classes
 
 

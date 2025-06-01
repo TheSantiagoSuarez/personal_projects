@@ -4,7 +4,7 @@ import streamlit as st
 import plotly.graph_objects as go
 import pickle
 
-import back_end.fpl_methods as methods
+import fpl_methods as methods
 
 
 with open ('season_data.pickle','rb') as file:

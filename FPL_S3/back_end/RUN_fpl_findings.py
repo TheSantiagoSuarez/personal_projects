@@ -2,7 +2,7 @@ import pandas as pd
 import pickle
 from functools import reduce
 
-import fpl_methods as methods
+import personal_projects.FPL_S3.fpl_methods as methods
 import fpl_data_intake
 
 def main(data):
