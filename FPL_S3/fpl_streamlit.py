@@ -648,7 +648,7 @@ def h2h(findings, data):
 
     for i in range(len(tabs)):
         with tabs[i]:
-            st.image(f"graphs/{pairs[i][0]}-{pairs[i][1]}_h2h.gif")
+            st.image(f"FPL_S3/graphs/{pairs[i][0]}-{pairs[i][1]}_h2h.gif")
 
     # endregion
     
