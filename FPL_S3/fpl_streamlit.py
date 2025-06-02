@@ -308,9 +308,9 @@ def points(findings, data):
     st.subheader("Optimised Bench")
     st.markdown("Basically a 'What if...?' in which we look at how many points were left on the bench everyone except Yahya could have capitalised on")
     data = findings["missed"]
-    
+
     merged_df = pd.merge(data, points_standings[["manager_short","points"]], on='manager_short')
-    merged_df['Final Points'] = merged_df['points'] + merged_df['missed_points']
+    merged_df['Final Points'] = merged_df['points'] + merged_df['points_missed']
     result_df = merged_df[['manager_short', 'Final Points']].sort_values(by='Final Points',ascending=False)
 
     trace2 = go.Bar(
