@@ -158,7 +158,7 @@ def points(findings, data):
     st.header("Akoya FPL Award")
     st.markdown("A little jacking off session to the ones that got the most points overall")
     
-    points_standings = findings["standings"][["manager_short","points"]].sort_values(by="points",ascending=False)
+    points_standings = findings["standings"][["manager_short","points"]].sort_values(by="points",ascending=False).reset_index(drop=True)
     h2h_standings = findings["standings"][["manager_short","h2h_points"]].sort_values(by="h2h_points",ascending=False)
 
     tab1, tab2, tab3, tab4 = st.tabs(["Top 3 H2H","Table H2H","Top 3 Pts", "Table Pts"])
