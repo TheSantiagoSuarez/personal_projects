@@ -308,13 +308,14 @@ def points(findings, data):
     st.subheader("Optimised Bench")
     st.markdown("Basically a 'What if...?' in which we look at how many points were left on the bench everyone except Yahya could have capitalised on")
     data = findings["missed"]
-
+    st.table(data)
+    st.table(points_standings)
     merged_df = pd.merge(data, points_standings, on='manager_short')
     merged_df['Final Points'] = merged_df['points_x'] + merged_df['points_y']
     result_df = merged_df[['manager', 'Final Points']].sort_values(by='Final Points',ascending=False)
 
     trace2 = go.Bar(
-        x=merged_df["manager"],
+        x=merged_df["manager_short"],
         y=merged_df["Final Points"],
         name='Optimised Points',
         marker=dict(color='blue')  # Set the color for the bars of Series 1
@@ -322,7 +323,7 @@ def points(findings, data):
 
     # Create a bar trace for the second series
     trace1 = go.Bar(
-        x=points_standings["manager"],
+        x=points_standings["manager_short"],
         y=points_standings["points"],
         name='Final Ranking',
         marker=dict(color='green')  # Set the color for the bars of Series 2
