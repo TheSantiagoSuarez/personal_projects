@@ -648,8 +648,7 @@ def h2h(findings, data):
 
     for i in range(len(tabs)):
         with tabs[i]:
-            base_path = os.path.dirname(os.path.abspath(__file__))
-            image_path = os.path.join(base_path,"FPL_S3","graphs", f"{pairs[i][0]}-{pairs[i][1]}_h2h.gif")        
+            image_path = os.path.join("FPL_S3","back_end","graphs", f"{pairs[i][0]}-{pairs[i][1]}_h2h.gif")        
             print("Files in gifs directory:", os.listdir())
             if os.path.exists(image_path):
                 st.image(image_path)
