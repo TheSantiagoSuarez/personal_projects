@@ -165,7 +165,7 @@ def points(findings, data):
 
     # Create a tab for the pictures
     with tab3:
-        display_podium("Final H2H Standings Top 3",h2h_standings,1)
+        display_podium("Final H2H Standings Top 3",h2h_standings,column=1)
 
     # Create a tab for the table
     with tab4:
@@ -174,7 +174,7 @@ def points(findings, data):
 
     # Create a tab for the pictures
     with tab3:
-        display_podium("Final Pt Standings Top 3",points_standings,1)
+        display_podium("Final Pt Standings Top 3",points_standings,column=1)
 
     # Create a tab for the table
     with tab4:
