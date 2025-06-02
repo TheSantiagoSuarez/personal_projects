@@ -164,11 +164,11 @@ def points(findings, data):
     tab1, tab2, tab3, tab4 = st.tabs(["Top 3 H2H","Table H2H","Top 3 Pts", "Table Pts"])
 
     # Create a tab for the pictures
-    with tab3:
+    with tab1:
         display_podium("Final H2H Standings Top 3",h2h_standings,column=1)
 
     # Create a tab for the table
-    with tab4:
+    with tab2:
         st.subheader("Table of H2H Points")
         st.write(h2h_standings)
 
