@@ -309,7 +309,7 @@ def points(findings, data):
     st.markdown("Basically a 'What if...?' in which we look at how many points were left on the bench everyone except Yahya could have capitalised on")
     data = findings["missed"]
 
-    merged_df = pd.merge(data, points_standings, on='manager')
+    merged_df = pd.merge(data, points_standings, on='manager_short')
     merged_df['Final Points'] = merged_df['points_x'] + merged_df['points_y']
     result_df = merged_df[['manager', 'Final Points']].sort_values(by='Final Points',ascending=False)
 
@@ -452,7 +452,7 @@ def players(findings, data):
 
     st.markdown(" ")
     st.info("Choosing who to have in your team was hard, unless you just chose Arsenal players and called it a day")
-    st.info("Let's first look at who has stuck with you through thick and thin, and ask yourself how Youssed has gotten Salah for a third year in a row. Let's look at...")
+    st.info("Let's first look at who has stuck with you through thick and thin, and ask yourself how Youssef has gotten Salah for a third year in a row. Let's look at...")
     st.header("Loyalty")
     st.markdown("The players you've owned the longest")
 

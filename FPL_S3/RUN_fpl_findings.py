@@ -2,7 +2,7 @@ import pandas as pd
 import pickle
 from functools import reduce
 
-import personal_projects.FPL_S3.fpl_methods as methods
+import fpl_methods as methods
 import fpl_data_intake
 
 def main(data):
@@ -19,11 +19,17 @@ def main(data):
     # region Points Standings
 
     # ranks each manager by all these statistics, in the whole season, and single gameweek
-    ranking_targets = ["total", "gk", "def", "mid", "fwd", "bench", "missed", "points_against", "points_difference"]
+    ranking_targets = ["total", "gk", "def", "mid", "fwd", "bench", "points_against", "points_difference"]
     for target in ranking_targets:
         findings[target + " gw"] = methods.get_ranking_gw(managers,"points",target)
         
         findings[target] = methods.get_ranking(managers,"points",target)
+    
+    missed = {}
+    for manager in managers:
+        missed[manager.short_name] = sum(methods.get_missed_points(manager,38).values())
+    
+    findings["missed"] = pd.DataFrame(list(missed.items()), columns=['manager_short', 'points_missed'])
 
     # ranks each manager by general standings statistics
     standing_fields = ["h2h_points","wins","draws","losses"]
