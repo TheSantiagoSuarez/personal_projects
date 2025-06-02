@@ -317,7 +317,7 @@ def points(findings, data):
     # region Optimised Bench
     st.subheader("Optimised Bench")
     st.markdown("Basically a 'What if...?' in which we look at how many points were left on the bench everyone except Yahya could have capitalised on")
-    data = findings["missed"].sort_values(by="points_missed", ascending = False)
+    data = findings["missed"].sort_values(by="points_missed", ascending = False).reset_index(drop=True)
 
     merged_df = pd.merge(data, points_standings[["manager_short","points"]], on='manager_short')
     merged_df['Final Points'] = merged_df['points'] + merged_df['points_missed']
