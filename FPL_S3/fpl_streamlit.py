@@ -345,7 +345,7 @@ def points(findings, data):
 
     # Create a tab for the podium
     with tab1:
-        display_podium("Optimised Bench Standings Top 3",data,2)
+        display_podium("Optimised Bench Standings Top 3",data,1)
 
     # Create a tab for the table
     with tab2:
