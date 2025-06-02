@@ -158,16 +158,26 @@ def points(findings, data):
     st.header("Akoya FPL Award")
     st.markdown("A little jacking off session to the ones that got the most points overall")
     
-    points_standings = findings["total"]
+    points_standings = findings["standings"][["manager_short","points"]].sort_values(by="points",ascending=False)
+    h2h_standings = findings["standings"][["manager_short","h2h_points"]].sort_values(by="h2h_points",ascending=False)
 
-    tab1, tab2 = st.tabs(["Top 3", "Table"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Top 3 H2H","Table H2H","Top 3 Pts", "Table Pts"])
 
     # Create a tab for the pictures
-    with tab1:
-        display_podium("Final Standings Top 3",points_standings)
+    with tab3:
+        display_podium("Final H2H Standings Top 3",h2h_standings)
 
     # Create a tab for the table
-    with tab2:
+    with tab4:
+        st.subheader("Table of H2H Points")
+        st.write(h2h_standings)
+
+    # Create a tab for the pictures
+    with tab3:
+        display_podium("Final Pt Standings Top 3",points_standings)
+
+    # Create a tab for the table
+    with tab4:
         st.subheader("Table of Final Points")
         st.write(points_standings)
 
@@ -180,7 +190,7 @@ def points(findings, data):
 
     # region Goalkeeper Rankings
     st.subheader("Goalkeepers")
-    st.markdown("A useless award for the most brain dead position in fpl. Pick a top 6 gk and inshallah.")
+    st.markdown("You'd think that this would be a brain dead decision, top 6 goalies and inshallah, but Sanchez somehow was the best option for half the season")
 
     data = findings["gk"]
     data_gw = findings["gk gw"]
@@ -206,7 +216,7 @@ def points(findings, data):
 
     # region Defender Rankings
     st.subheader("Defenders")
-    st.markdown("A single goal vs Arsenal can mean 4 points for someone. But it also means Ruslan losing 16 cleansheet points")
+    st.markdown("Trent and Van Dijk, also known as Sandipan's Salah")
 
     data = findings["def"]
     data_gw = findings["def gw"]
@@ -258,7 +268,7 @@ def points(findings, data):
 
     # region Forward Rankings
     st.subheader("Forwards")
-    st.markdown("Just happy that Haaland didn't get in the podium for best gameweeks")
+    st.markdown("Too many managers, to few strikers. Ings somehow became a luxury")
 
     data = findings["fwd"]
     data_gw = findings["fwd gw"]
@@ -282,7 +292,7 @@ def points(findings, data):
         st.write(data_gw)
     # endregion
 
-    st.info("Haaland was 231 of those points btw")
+    st.info("Salah was 47% of Youssef's midfield points btw")
     st.info("Anyways, some highs, some lows... but all our own choices, for the most part")
     st.info("Now let's look at the ones we didn't choose, let's look...")
     st.header("Outside the starting 11")
@@ -307,15 +317,15 @@ def points(findings, data):
     # region Optimised Bench
     st.subheader("Optimised Bench")
     st.markdown("Basically a 'What if...?' in which we look at how many points were left on the bench everyone except Yahya could have capitalised on")
-    data = findings["missed"]
+    data = findings["missed"].sort_values(by="points_missed", ascending = False)
 
     merged_df = pd.merge(data, points_standings[["manager_short","points"]], on='manager_short')
     merged_df['Final Points'] = merged_df['points'] + merged_df['points_missed']
     result_df = merged_df[['manager_short', 'Final Points']].sort_values(by='Final Points',ascending=False)
 
     trace2 = go.Bar(
-        x=merged_df["manager_short"],
-        y=merged_df["Final Points"],
+        x=result_df["manager_short"],
+        y=result_df["Final Points"],
         name='Optimised Points',
         marker=dict(color='blue')  # Set the color for the bars of Series 1
     )
@@ -358,7 +368,7 @@ def points(findings, data):
     # endregion
 
 
-    st.info("De Bruyne in the bench was a brave choice")
+    st.info("Unfortunately, I can't tell how many of those missed poitns would have resulted in a H2H win. Maybe next year...")
     st.info("Since we've looked at our points and our choices, let's look at what we saw in the end of every gameweek. Let's look at...")
     st.header("Gameweek Winners and Losers")
 
@@ -398,8 +408,8 @@ def points(findings, data):
     # endregion
 
     # region Tottenham
-    st.subheader("Tottenham Award")
-    st.markdown("A tribute to the chickens, a ranking of the longest streaks without winning a podium in the league")
+    st.subheader("Arsenal Award")
+    st.markdown("Due to recent events, the Totenham Award has been rebranded appropriately. But it still serves the same purpose, a ranking of the longest streaks without winning a podium in the league")
     data = findings["streaks"][["manager_short","tottenham"]].sort_values("tottenham",ascending=False).reset_index(drop=True)
     streak_data = findings["streaks"][["manager_short","tottenham","streak"]].sort_values("tottenham",ascending=False).reset_index(drop=True)
 
