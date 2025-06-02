@@ -648,7 +648,11 @@ def h2h(findings, data):
 
     for i in range(len(tabs)):
         with tabs[i]:
-            st.image(f"{picture_path}graphs/{pairs[i][0]}-{pairs[i][1]}_h2h.gif")
+            image_path = os.path.join("FPL_S3","graphs", f"{pairs[i][0]}-{pairs[i][1]}_h2h.gif")
+            if os.path.exists(image_path):
+                st.image(image_path)
+            else:
+                st.warning(f"Image not found: {image_path}")
 
     # endregion
     
